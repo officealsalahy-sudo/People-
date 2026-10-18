@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>سجل العوائل والناخبين</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#16263a;--paper:#f4f5f7;--card:#fff;--line:#d9dde3;--teal:#0f766e;--teal-d:#0b5a54;--amber:#b45309;--red:#b42318;--mut:#5d6b7b}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Tajawal','Segoe UI',Tahoma,sans-serif;background:var(--paper);color:var(--ink);font-size:16px}
+header{background:var(--ink);color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;position:sticky;top:0;z-index:5}
+header h1{margin:0;font-size:19px;font-weight:800}
+header small{display:block;font-weight:400;opacity:.7;font-size:12px}
+nav{display:flex;gap:6px;background:#fff;padding:8px 12px;border-bottom:1px solid var(--line);overflow-x:auto;position:sticky;top:58px;z-index:4}
+nav button{flex:1;min-width:92px;border:0;background:none;padding:10px 8px;font:inherit;font-weight:700;color:var(--mut);border-bottom:3px solid transparent;cursor:pointer}
+nav button.on{color:var(--teal);border-color:var(--teal)}
+main{max-width:980px;margin:0 auto;padding:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px;margin-bottom:12px}
+.card h2{margin:0 0 10px;font-size:17px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+label{display:block;font-size:13px;color:var(--mut);margin-bottom:4px;font-weight:500}
+input,select{width:100%;padding:10px;border:1px solid var(--line);border-radius:6px;font:inherit;background:#fff;color:var(--ink)}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--teal);outline-offset:1px}
+.btn{border:0;border-radius:6px;padding:11px 16px;font:inherit;font-weight:700;cursor:pointer;background:var(--teal);color:#fff}
+.btn:hover{background:var(--teal-d)}
+.btn.g{background:#e9edf1;color:var(--ink)}.btn.g:hover{background:#dde3e9}
+.btn.r{background:#fbeaea;color:var(--red)}
+.btn.s{padding:7px 11px;font-size:14px}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.sp{flex:1}
+.member{border:1px dashed var(--line);border-radius:8px;padding:12px;margin-top:10px;background:#fafbfc}
+.member .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-weight:700}
+.hint{font-size:12px;color:var(--mut);margin-top:4px}
+.fam{border-right:4px solid var(--teal)}
+.fam .hd{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center}
+.fam .nm{font-weight:800;font-size:17px}
+.tag{font-size:12px;background:#e6f3f1;color:var(--teal-d);padding:2px 8px;border-radius:20px;font-weight:700}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{border:1px solid var(--line);padding:7px 8px;text-align:right;vertical-align:top}
+th{background:#eef1f4;font-weight:700}
+.wrap{overflow-x:auto}
+.num{white-space:nowrap;font-variant-numeric:tabular-nums}
+.rem{color:var(--amber);font-weight:700}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 18px;border-radius:8px;z-index:20;display:none}
+.empty{text-align:center;color:var(--mut);padding:28px}
+.stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.stats div{flex:1;min-width:130px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.stats b{display:block;font-size:20px}.stats span{font-size:12px;color:var(--mut)}
+dialog{border:0;border-radius:10px;max-width:520px;width:92%;padding:18px}
+dialog::backdrop{background:rgba(0,0,0,.4)}
+#print{display:none}
+#login{position:fixed;inset:0;background:var(--ink);z-index:50;align-items:center;justify-content:center;padding:16px}
+#login form{background:#fff;border-radius:10px;padding:22px;width:100%;max-width:360px}
+#login h2{margin:0 0 14px}
+
+/* ---------- الطباعة ---------- */
+@media print{
+  @page{size:A4;margin:12mm}
+  body{background:#fff}
+  header,nav,main,.toast,dialog,#login{display:none!important}
+  #print{display:block}
+  .sheet{page-break-after:always;break-after:page}
+  .sheet:last-child{page-break-after:auto;break-after:auto}
+  .p-head{border-bottom:3px double var(--ink);padding-bottom:8px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:flex-end}
+  .p-head h1{margin:0;font-size:22px}
+  .p-head span{font-size:12px;color:#444}
+  .p-info{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;margin-bottom:10px;font-size:13px}
+  .p-info b{color:#333}
+  #print table{font-size:12px}
+  #print th{background:#e8ecf0!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #print tr{page-break-inside:avoid}
+  #print tfoot td{font-weight:800;background:#f1f3f5!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .sign{height:26px}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>سجل العوائل والناخبين<small id="mode"></small></h1>
+  <div class="bar"><button class="btn g s" onclick="openSettings()">⚙ الإعدادات</button><button class="btn g s" onclick="logout()">خروج</button></div>
+</header>
+<div id="login" style="display:none"><form onsubmit="event.preventDefault();doLogin()"><h2>دخول المسؤول</h2><label>كلمة المرور</label><input id="pw" type="password" autocomplete="current-password"><label style="display:flex;gap:8px;align-items:center;margin:10px 0;color:var(--ink)"><input type="checkbox" id="rem" style="width:auto"> تذكرني على هذا الجهاز</label><div id="lerr" style="color:var(--red);min-height:20px;font-size:14px"></div><button class="btn" style="width:100%">دخول</button><button type="button" class="btn g s" onclick="openSettings()" style="width:100%;margin-top:10px">تغيير رابط السكربت</button></form></div>
+<nav>
+  <button id="t-add" class="on" onclick="tab('add')">إضافة عائلة</button>
+  <button id="t-list" onclick="tab('list')">السجل</button>
+  <button id="t-cent" onclick="tab('cent')">مراكز الاقتراع</button>
+</nav>
+
+<main>
+  <!-- إضافة -->
+  <section id="v-add">
+    <div class="card">
+      <h2 id="formTitle">رب الأسرة</h2>
+      <div id="headForm" class="grid"></div>
+    </div>
+    <div class="card">
+      <div class="bar"><h2 style="margin:0">أفراد العائلة</h2><span class="sp"></span>
+        <button class="btn g s" onclick="addMember()">+ إضافة فرد</button></div>
+      <div id="members"></div>
+      <div class="hint" id="noMem">لم تُضف أي فرد بعد. اضغط «إضافة فرد» لكل شخص من العائلة.</div>
+    </div>
+    <div class="bar">
+      <button class="btn" onclick="saveFamily()">حفظ العائلة</button>
+      <button class="btn g" onclick="saveFamily(true)">حفظ وطباعة</button>
+      <button class="btn g" onclick="resetForm()">فورم جديد</button>
+    </div>
+  </section>
+
+  <!-- السجل -->
+  <section id="v-list" hidden>
+    <div class="stats" id="stats"></div>
+    <div class="bar" style="margin-bottom:12px">
+      <input id="q" placeholder="بحث بالاسم أو رقم البطاقة أو المركز..." oninput="renderList()" style="flex:1;min-width:200px">
+      <button class="btn g" onclick="printAll()">طباعة كل السجل</button>
+    </div>
+    <div id="list"></div>
+  </section>
+
+  <!-- المراكز -->
+  <section id="v-cent" hidden>
+    <div class="card">
+      <div class="bar">
+        <div style="flex:1;min-width:220px"><label>مركز الاقتراع</label><select id="cSel" onchange="renderCenters()"></select></div>
+        <button class="btn" onclick="printCenters()">طباعة / حفظ PDF</button>
+      </div>
+      <div class="hint">اختر «كل المراكز» لطباعة ملف واحد يبدأ فيه كل مركز بصفحة جديدة.</div>
+    </div>
+    <div id="cView"></div>
+  </section>
+</main>
+
+<dialog id="dlg">
+  <h2 style="margin-top:0">الإعدادات</h2>
+  <label>رابط Google Apps Script (تطبيق الويب)</label>
+  <input id="sUrl" placeholder="https://script.google.com/macros/s/.../exec" dir="ltr">
+  <div class="hint">اتركه فارغاً للعمل محلياً على هذا الجهاز فقط (تجريبي).</div>
+  <label style="margin-top:12px">عنوان الكشوفات المطبوعة</label>
+  <input id="sTitle" placeholder="مثال: كشف مساعدات العوائل">
+  <label style="margin-top:12px;display:flex;gap:8px;align-items:center;color:var(--ink)">
+    <input type="checkbox" id="sK" style="width:auto"> المبالغ بالآلاف (اكتب ٥٠ = ٥٠,٠٠٠ دينار)
+  </label>
+  <div class="bar" style="margin-top:16px"><button class="btn" onclick="saveSettings()">حفظ</button>
+  <button class="btn g" onclick="dlg.close()">إلغاء</button></div>
+</dialog>
+
+<div id="print"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const LS=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}};
+const DEFAULT_URL='https://script.google.com/macros/s/AKfycbyBubHCfjAhB15mz8bWzSdg36D1lYd9znpC72psMqTA5tiKPrAgYlLmIDVtHEjXCjoCNA/exec';
+const SS=(k,v)=>{try{if(v===undefined)return sessionStorage.getItem(k);if(v===null)sessionStorage.removeItem(k);else sessionStorage.setItem(k,v)}catch(e){return null}};
+let pass=SS('pass')||LS('pass')||'';
+function clearPass(){pass='';SS('pass',null);try{localStorage.removeItem('pass')}catch(e){}}
+function showLogin(m){$('#login').style.display='flex';$('#lerr').textContent=m||'';$('#pw').value=''}
+function hideLogin(){$('#login').style.display='none'}
+async function doLogin(){
+  const v=$('#pw').value;if(!v)return;pass=v;$('#lerr').textContent='';
+  try{await fetchAll();
+    if($('#rem').checked)LS('pass',v);else SS('pass',v);
+    hideLogin();refresh();
+  }catch(e){$('#lerr').textContent=e.message}
+}
+function logout(){clearPass();people=[];location.reload()}
+let role='';const isAdmin=()=>role==='admin';
+async function fetchAll(){const j=await call({action:'list'});role=j.role;people=j.rows}
+let people=[], url=LS('url')||DEFAULT_URL, title=LS('title')||'كشف العوائل والناخبين', inK=LS('k')!=='0', editing=null;
+
+const fmt=n=>Number(n||0).toLocaleString('en-US');
+const toDinar=v=>{v=String(v).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/,/g,'').trim();if(v==='')return 0;const n=Number(v)||0;return inK?n*1000:n};
+const fromDinar=n=>n?(inK?n/1000:n):'';
+const toast=m=>{const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(t._t);t._t=setTimeout(()=>t.style.display='none',2600)};
+
+/* ---------- البيانات ---------- */
+async function call(payload){
+  payload.pass=pass;
+  let r;try{r=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)})}catch(e){throw new Error('تعذر الوصول للسكربت: تأكد أن الرابط هو آخر نشر وأن الوصول «أي شخص»')}
+  const t=await r.text();let j;
+  try{j=JSON.parse(t)}catch(e){throw new Error(t.trim().startsWith('<')?'الرابط يطلب تسجيل دخول أو النشر غير صحيح (اجعل الوصول: أي شخص)':'رد غير متوقع من السكربت')}
+  if(!j.ok){
+    if(j.err==='bad'){clearPass();showLogin('كلمة المرور خاطئة')}
+    throw new Error(j.err==='forbidden'?'ما عندك صلاحية لهذا الإجراء':j.err==='locked'?'تم القفل مؤقتاً بسبب محاولات خاطئة، حاول بعد 10 دقائق':j.err==='bad'?'كلمة المرور خاطئة':'رفض السكربت الطلب');
+  }
+  return j;
+}
+async function load(){
+  if(url){
+    if(!pass){showLogin();return}
+    try{await fetchAll();hideLogin()}catch(e){toast(e.message)}
+  }else people=JSON.parse(LS('people')||'[]');
+  refresh();
+}
+async function post(payload){
+  if(url){
+    await call(payload);await load();
+  }else{
+    people=people.filter(p=>p.hid!==payload.hid);
+    if(payload.action==='save')people=people.concat(payload.rows);
+    LS('people',JSON.stringify(people)); refresh();
+  }
+}
+function refresh(){
+  $('#mode').textContent=url?('متصل بـ Google Sheet · '+(isAdmin()?'مسؤول':'مدخل بيانات')):'وضع محلي (غير مرتبط بشيت)';
+  renderList();fillCenters();renderCenters();
+}
+
+/* ---------- الفورم ---------- */
+const amtLbl=()=>inK?'(بالآلاف)':'(بالدينار)';
+function personFields(p,isHead){
+  p=p||{};
+  return `
+  <div><label>الاسم الثلاثي</label><input data-k="name" value="${esc(p.name)}"></div>
+  <div><label>مركز الاقتراع</label><input data-k="center" list="centers" value="${esc(p.center)}"></div>
+  <div><label>رقم بطاقة الناخب</label><input data-k="voter" inputmode="numeric" value="${esc(p.voter)}"></div>
+  <div><label>رقم المحطة (إن وجد)</label><input data-k="station" inputmode="numeric" value="${esc(p.station)}"></div>
+  ${isHead?`<div><label>رقم الهاتف</label><input data-k="phone" inputmode="tel" value="${esc(p.phone)}"></div>`:''}
+  <div><label>عنوان السكن</label><input data-k="address" value="${esc(p.address)}"></div>
+  <div><label>معرّف من</label><input data-k="ref" value="${esc(p.ref)}"></div>
+  <div><label>المبلغ الواصل ${amtLbl()}</label><input data-k="got" inputmode="decimal" value="${fromDinar(p.got)}"></div>
+  <div><label>المبلغ المتبقي ${amtLbl()}</label><input data-k="rem" inputmode="decimal" value="${fromDinar(p.rem)}"></div>`;
+}
+function resetForm(fam){
+  editing=fam?fam[0].hid:null;
+  $('#formTitle').textContent=editing?'تعديل رب الأسرة':'رب الأسرة';
+  $('#headForm').innerHTML=personFields(fam?fam[0]:null,true);
+  $('#members').innerHTML='';
+  if(fam)fam.slice(1).forEach(m=>addMember(m));
+  $('#noMem').style.display=$('#members').children.length?'none':'block';
+}
+function addMember(m){
+  const h=readCard($('#headForm'));
+  m=m||{center:h.center,address:h.address,ref:h.ref};
+  const d=document.createElement('div');d.className='member';
+  d.innerHTML=`<div class="top"><span>فرد من العائلة</span><button class="btn r s" onclick="this.closest('.member').remove();$('#noMem').style.display=$('#members').children.length?'none':'block'">حذف</button></div><div class="grid">${personFields(m,false)}</div>`;
+  $('#members').appendChild(d);$('#noMem').style.display='none';
+  if(!m.name)d.querySelector('[data-k=name]').focus();
+}
+function readCard(el){const o={};el.querySelectorAll('[data-k]').forEach(i=>o[i.dataset.k]=i.value.trim());return o}
+function numCleanId(s){return String(s||'').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d))}
+
+async function saveFamily(thenPrint){
+  const h=readCard($('#headForm'));
+  if(!h.name){toast('اكتب اسم رب الأسرة');return}
+  const hid=editing||'H'+Date.now();
+  const mk=(o,role,i,phone)=>({id:hid+'-'+i,hid,role,name:o.name,center:o.center,voter:numCleanId(o.voter),station:numCleanId(o.station),phone:phone?numCleanId(o.phone):'',address:o.address,ref:o.ref,got:toDinar(o.got),rem:toDinar(o.rem)});
+  const rows=[mk(h,'رب أسرة',0,true)];
+  let bad=false;
+  document.querySelectorAll('#members .member').forEach((m,i)=>{const o=readCard(m);if(!o.name){bad=true;return}rows.push(mk(o,'فرد',i+1,false))});
+  if(bad){toast('أحد الأفراد بلا اسم، أكمله أو احذفه');return}
+  try{await post({action:'save',hid,rows});}catch(e){toast('فشل الحفظ: '+(e&&e.message?e.message:'تعذر الوصول للرابط — افتح الصفحة من رابط https وليس من ملف على الجهاز'));return}
+  toast('تم حفظ العائلة');
+  if(thenPrint)printFamilies([rows]);
+  resetForm();window.scrollTo(0,0);
+}
+
+/* ---------- السجل ---------- */
+function families(){
+  const m={};people.forEach(p=>(m[p.hid]=m[p.hid]||[]).push(p));
+  return Object.values(m).map(f=>f.sort((a,b)=>(a.role==='رب أسرة'?0:1)-(b.role==='رب أسرة'?0:1)||String(a.id).localeCompare(String(b.id),undefined,{numeric:true})));
+}
+const sum=(a,k)=>a.reduce((s,p)=>s+Number(p[k]||0),0);
+function renderList(){
+  const q=($('#q')?.value||'').trim();
+  let fs=families();
+  if(q)fs=fs.filter(f=>f.some(p=>[p.name,p.voter,p.center,p.ref].join(' ').includes(q)));
+  $('#stats').innerHTML=`<div><b>${fs.length}</b><span>عائلة</span></div><div><b>${fs.reduce((s,f)=>s+f.length,0)}</b><span>شخص</span></div><div><b>${fmt(sum(fs.flat(),'got'))}</b><span>مجموع الواصل</span></div><div><b>${fmt(sum(fs.flat(),'rem'))}</b><span>مجموع المتبقي</span></div>`;
+  $('#list').innerHTML=fs.length?fs.map(f=>{const h=f[0];return `
+  <div class="card fam"><div class="hd"><div><span class="nm">${esc(h.name)}</span> <span class="tag">${f.length} أشخاص</span>
+  <div class="hint">${esc(h.center)} ${h.phone?'· '+esc(h.phone):''} ${h.ref?'· معرّف: '+esc(h.ref):''}</div></div>
+  <div class="bar"><button class="btn g s" onclick="printFam('${h.hid}')">طباعة</button>${isAdmin()?`<button class="btn g s" onclick="editFam('${h.hid}')">تعديل</button><button class="btn r s" onclick="delFam('${h.hid}')">حذف</button>`:''}</div></div>
+  <div class="wrap" style="margin-top:8px"><table><tr><th>الاسم</th><th>الصفة</th><th>المركز</th><th>رقم البطاقة</th><th>الواصل</th><th>المتبقي</th></tr>
+  ${f.map(p=>`<tr><td>${esc(p.name)}</td><td>${esc(p.role)}</td><td>${esc(p.center)}</td><td class="num">${esc(p.voter)}</td><td class="num">${fmt(p.got)}</td><td class="num rem">${fmt(p.rem)}</td></tr>`).join('')}</table></div></div>`}).join(''):'<div class="empty">لا توجد عوائل مسجلة. ابدأ من «إضافة عائلة».</div>';
+}
+const famOf=h=>families().find(f=>f[0].hid===h);
+function editFam(h){if(!isAdmin())return;resetForm(famOf(h));tab('add');window.scrollTo(0,0)}
+async function delFam(h){if(!confirm('حذف هذه العائلة وكل أفرادها؟'))return;try{await post({action:'delete',hid:h});toast('تم الحذف')}catch(e){toast('فشل الحذف: '+(e&&e.message?e.message:'تعذر الوصول للرابط'))}}
+const printFam=h=>printFamilies([famOf(h)]);
+const printAll=()=>{const f=families();if(!f.length)return toast('لا توجد بيانات');printFamilies(f)};
+
+/* ---------- الطباعة ---------- */
+const today=()=>new Date().toLocaleDateString('ar-IQ',{year:'numeric',month:'long',day:'numeric'});
+function printFamilies(fs){
+  $('#print').innerHTML=fs.map(f=>{const h=f[0];return `<div class="sheet">
+  <div class="p-head"><h1>${esc(title)}</h1><span>${today()}</span></div>
+  <div class="p-info"><div><b>رب الأسرة:</b> ${esc(h.name)}</div><div><b>الهاتف:</b> ${esc(h.phone)||'—'}</div>
+  <div><b>عنوان السكن:</b> ${esc(h.address)||'—'}</div><div><b>معرّف من:</b> ${esc(h.ref)||'—'}</div></div>
+  <table><thead><tr><th>#</th><th>الاسم الثلاثي</th><th>الصفة</th><th>مركز الاقتراع</th><th>رقم البطاقة</th><th>المحطة</th><th>الواصل</th><th>المتبقي</th><th>التوقيع</th></tr></thead><tbody>
+  ${f.map((p,i)=>`<tr><td>${i+1}</td><td>${esc(p.name)}</td><td>${esc(p.role)}</td><td>${esc(p.center)}</td><td class="num">${esc(p.voter)}</td><td>${esc(p.station)}</td><td class="num">${fmt(p.got)}</td><td class="num">${fmt(p.rem)}</td><td class="sign"></td></tr>`).join('')}
+  </tbody><tfoot><tr><td colspan="6">المجموع</td><td class="num">${fmt(sum(f,'got'))}</td><td class="num">${fmt(sum(f,'rem'))}</td><td></td></tr></tfoot></table></div>`}).join('');
+  setTimeout(()=>window.print(),150);
+}
+
+/* ---------- المراكز ---------- */
+const centerList=()=>[...new Set(people.map(p=>(p.center||'').trim()||'بدون مركز'))].sort((a,b)=>a.localeCompare(b,'ar'));
+function fillCenters(){
+  const cs=centerList(),sel=$('#cSel'),cur=sel.value;
+  sel.innerHTML='<option value="*">كل المراكز</option>'+cs.map(c=>`<option>${esc(c)}</option>`).join('');
+  if(cur&&[...sel.options].some(o=>o.value===cur))sel.value=cur;
+  let dl=$('#centers');if(!dl){dl=document.createElement('datalist');dl.id='centers';document.body.appendChild(dl)}
+  dl.innerHTML=cs.filter(c=>c!=='بدون مركز').map(c=>`<option value="${esc(c)}">`).join('');
+}
+function centerBlocks(){
+  const v=$('#cSel').value,heads={};
+  people.forEach(p=>{if(p.role==='رب أسرة')heads[p.hid]=p});
+  const by={};
+  people.forEach(p=>{const c=(p.center||'').trim()||'بدون مركز';(by[c]=by[c]||[]).push(p)});
+  return Object.keys(by).sort((a,b)=>a.localeCompare(b,'ar')).filter(c=>v==='*'||c===v).map(c=>({c,rows:by[c].sort((a,b)=>a.name.localeCompare(b.name,'ar')),heads}));
+}
+function centerTable(b,forPrint){
+  return `<table><thead><tr><th>#</th><th>الاسم الثلاثي</th><th>الصفة</th><th>رقم البطاقة</th><th>المحطة</th><th>هاتف رب الأسرة</th><th>معرّف من</th><th>الواصل</th><th>المتبقي</th>${forPrint?'<th>التوقيع</th>':''}</tr></thead><tbody>
+  ${b.rows.map((p,i)=>{const h=b.heads[p.hid]||{};return `<tr><td>${i+1}</td><td>${esc(p.name)}</td><td>${p.role==='رب أسرة'?'رب أسرة':'فرد · '+esc(h.name||'')}</td><td class="num">${esc(p.voter)}</td><td>${esc(p.station)}</td><td class="num">${esc(h.phone)}</td><td>${esc(p.ref||h.ref)}</td><td class="num">${fmt(p.got)}</td><td class="num">${fmt(p.rem)}</td>${forPrint?'<td class="sign"></td>':''}</tr>`}).join('')}
+  </tbody><tfoot><tr><td colspan="7">المجموع</td><td class="num">${fmt(sum(b.rows,'got'))}</td><td class="num">${fmt(sum(b.rows,'rem'))}</td>${forPrint?'<td></td>':''}</tr></tfoot></table>`;
+}
+function renderCenters(){
+  const bs=centerBlocks();
+  $('#cView').innerHTML=bs.length?bs.map(b=>`<div class="card"><div class="bar"><h2 style="margin:0">${esc(b.c)}</h2><span class="tag">${b.rows.length} ناخب</span></div><div class="wrap" style="margin-top:8px">${centerTable(b,false)}</div></div>`).join(''):'<div class="empty">لا توجد بيانات بعد.</div>';
+}
+function printCenters(){
+  const bs=centerBlocks();if(!bs.length)return toast('لا توجد بيانات');
+  $('#print').innerHTML=bs.map(b=>`<div class="sheet"><div class="p-head"><h1>${esc(b.c)}</h1><span>${b.rows.length} ناخب · ${today()}</span></div>${centerTable(b,true)}</div>`).join('');
+  setTimeout(()=>window.print(),150);
+}
+
+/* ---------- عام ---------- */
+function tab(t){['add','list','cent'].forEach(x=>{$('#v-'+x).hidden=x!==t;$('#t-'+x).classList.toggle('on',x===t)});if(t==='cent'){fillCenters();renderCenters()}}
+function openSettings(){$('#sUrl').value=url;$('#sTitle').value=title;$('#sK').checked=inK;$('#dlg').showModal()}
+function saveSettings(){
+  url=$('#sUrl').value.trim();title=$('#sTitle').value.trim()||title;inK=$('#sK').checked;
+  LS('url',url);LS('title',title);LS('k',inK?'1':'0');
+  dlg.close();resetForm();load();toast('تم حفظ الإعدادات');
+}
+// معرّف من: أي تغيير عند رب الأسرة ينتقل تلقائياً لأفراد العائلة (ما عدا من عدّلته يدوياً)
+$('#headForm').addEventListener('input',e=>{
+  if(e.target.dataset.k!=='ref')return;
+  const prev=e.target._prev!==undefined?e.target._prev:e.target.defaultValue, v=e.target.value;
+  document.querySelectorAll('#members [data-k=ref]').forEach(i=>{if(i.value.trim()===''||i.value===prev)i.value=v});
+  e.target._prev=v;
+});
+resetForm();load();
+</script>
+</body>
+</html>
