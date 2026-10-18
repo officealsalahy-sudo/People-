@@ -134,8 +134,8 @@ dialog::backdrop{background:rgba(0,0,0,.4)}
 <dialog id="dlg">
   <h2 style="margin-top:0">الإعدادات</h2>
   <label>رابط Google Apps Script (تطبيق الويب)</label>
-  <input id="sUrl" placeholder="https://script.google.com/macros/s/.../exec" dir="ltr">
-  <div class="hint">اتركه فارغاً للعمل محلياً على هذا الجهاز فقط (تجريبي).</div>
+  <input id="sUrl" readonly placeholder="https://script.google.com/macros/s/.../exec" dir="ltr">
+  <div class="hint">الرابط ثابت داخل الملف.</div>
   <label style="margin-top:12px">عنوان الكشوفات المطبوعة</label>
   <input id="sTitle" placeholder="مثال: كشف مساعدات العوائل">
   <label style="margin-top:12px;display:flex;gap:8px;align-items:center;color:var(--ink)">
@@ -152,7 +152,7 @@ dialog::backdrop{background:rgba(0,0,0,.4)}
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const LS=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}};
-const DEFAULT_URL='https://script.google.com/macros/s/AKfycbwf9YET84Ofq47bn3oz6erA8lhh93avj9Rroh6GKX7WSe8vA0Uf5y3Hh04gp4m52p7D/exec';
+const DEFAULT_URL='https://script.google.com/macros/s/AKfycbyglC3QbwVp9eOPYBw0qVgczp7Dr1ldh0gNIfzqzIJLC_u7mr_n7039E-6AVmTO7unz/exec';
 const SS=(k,v)=>{try{if(v===undefined)return sessionStorage.getItem(k);if(v===null)sessionStorage.removeItem(k);else sessionStorage.setItem(k,v)}catch(e){return null}};
 let pass=SS('pass')||LS('pass')||'';
 function clearPass(){pass='';SS('pass',null);try{localStorage.removeItem('pass')}catch(e){}}
@@ -168,7 +168,7 @@ async function doLogin(){
 function logout(){clearPass();people=[];location.reload()}
 let role='';const isAdmin=()=>role==='admin';
 async function fetchAll(){const j=await call({action:'list'});role=j.role;people=j.rows}
-let people=[], url=(LS('urlFor')===DEFAULT_URL&&LS('url'))||DEFAULT_URL, title=LS('title')||'كشف العوائل والناخبين', inK=LS('k')!=='0', editing=null;
+let people=[], url=DEFAULT_URL, title=LS('title')||'كشف العوائل والناخبين', inK=LS('k')!=='0', editing=null;
 
 const fmt=n=>Number(n||0).toLocaleString('en-US');
 const toDinar=v=>{v=String(v).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/,/g,'').trim();if(v==='')return 0;const n=Number(v)||0;return inK?n*1000:n};
@@ -178,10 +178,11 @@ const toast=m=>{const t=$('#toast');t.textContent=m;t.style.display='block';clea
 /* ---------- البيانات ---------- */
 async function call(payload){
   payload.pass=pass;
-  let r;try{r=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)})}catch(e){throw new Error('تعذر الوصول للسكربت. الرابط المستخدم ينتهي بـ: ...'+String(url).slice(-14)+' — المطلوب: ...52p7D/exec')}
+  let r;try{r=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)})}catch(e){throw new Error('تعذر الاتصال بالرابط ...'+String(url).slice(-14)+' — تأكد من الإنترنت وأن الوصول «أي شخص»')}
   const t=await r.text();let j;
   try{j=JSON.parse(t)}catch(e){throw new Error(t.trim().startsWith('<')?'الرابط يطلب تسجيل دخول أو النشر غير صحيح (اجعل الوصول: أي شخص)':'رد غير متوقع من السكربت')}
   if(!j.ok){
+    if(j.err==='server')throw new Error('خطأ داخل السكربت: '+j.msg);
     if(j.err==='bad'){clearPass();showLogin('كلمة المرور خاطئة')}
     throw new Error(j.err==='forbidden'?'ما عندك صلاحية لهذا الإجراء':j.err==='locked'?'تم القفل مؤقتاً بسبب محاولات خاطئة، حاول بعد 10 دقائق':j.err==='bad'?'كلمة المرور خاطئة':'رفض السكربت الطلب');
   }
@@ -329,8 +330,8 @@ function printCenters(){
 function tab(t){['add','list','cent'].forEach(x=>{$('#v-'+x).hidden=x!==t;$('#t-'+x).classList.toggle('on',x===t)});if(t==='cent'){fillCenters();renderCenters()}}
 function openSettings(){$('#sUrl').value=url;$('#sTitle').value=title;$('#sK').checked=inK;$('#dlg').showModal()}
 function saveSettings(){
-  url=$('#sUrl').value.trim();title=$('#sTitle').value.trim()||title;inK=$('#sK').checked;
-  LS('url',url);LS('urlFor',DEFAULT_URL);LS('title',title);LS('k',inK?'1':'0');
+  title=$('#sTitle').value.trim()||title;inK=$('#sK').checked;
+  LS('title',title);LS('k',inK?'1':'0');
   dlg.close();resetForm();load();toast('تم حفظ الإعدادات');
 }
 // معرّف من: أي تغيير عند رب الأسرة ينتقل تلقائياً لأفراد العائلة (ما عدا من عدّلته يدوياً)
