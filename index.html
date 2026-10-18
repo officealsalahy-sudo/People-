@@ -152,7 +152,7 @@ dialog::backdrop{background:rgba(0,0,0,.4)}
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const LS=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}};
-const DEFAULT_URL='https://script.google.com/macros/s/AKfycbyBubHCfjAhB15mz8bWzSdg36D1lYd9znpC72psMqTA5tiKPrAgYlLmIDVtHEjXCjoCNA/exec';
+const DEFAULT_URL='https://script.google.com/macros/s/AKfycbwf9YET84Ofq47bn3oz6erA8lhh93avj9Rroh6GKX7WSe8vA0Uf5y3Hh04gp4m52p7D/exec';
 const SS=(k,v)=>{try{if(v===undefined)return sessionStorage.getItem(k);if(v===null)sessionStorage.removeItem(k);else sessionStorage.setItem(k,v)}catch(e){return null}};
 let pass=SS('pass')||LS('pass')||'';
 function clearPass(){pass='';SS('pass',null);try{localStorage.removeItem('pass')}catch(e){}}
@@ -168,7 +168,7 @@ async function doLogin(){
 function logout(){clearPass();people=[];location.reload()}
 let role='';const isAdmin=()=>role==='admin';
 async function fetchAll(){const j=await call({action:'list'});role=j.role;people=j.rows}
-let people=[], url=LS('url')||DEFAULT_URL, title=LS('title')||'كشف العوائل والناخبين', inK=LS('k')!=='0', editing=null;
+let people=[], url=(LS('urlFor')===DEFAULT_URL&&LS('url'))||DEFAULT_URL, title=LS('title')||'كشف العوائل والناخبين', inK=LS('k')!=='0', editing=null;
 
 const fmt=n=>Number(n||0).toLocaleString('en-US');
 const toDinar=v=>{v=String(v).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/,/g,'').trim();if(v==='')return 0;const n=Number(v)||0;return inK?n*1000:n};
@@ -178,7 +178,7 @@ const toast=m=>{const t=$('#toast');t.textContent=m;t.style.display='block';clea
 /* ---------- البيانات ---------- */
 async function call(payload){
   payload.pass=pass;
-  let r;try{r=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)})}catch(e){throw new Error('تعذر الوصول للسكربت: تأكد أن الرابط هو آخر نشر وأن الوصول «أي شخص»')}
+  let r;try{r=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)})}catch(e){throw new Error('تعذر الوصول للسكربت. الرابط المستخدم ينتهي بـ: ...'+String(url).slice(-14)+' — المطلوب: ...52p7D/exec')}
   const t=await r.text();let j;
   try{j=JSON.parse(t)}catch(e){throw new Error(t.trim().startsWith('<')?'الرابط يطلب تسجيل دخول أو النشر غير صحيح (اجعل الوصول: أي شخص)':'رد غير متوقع من السكربت')}
   if(!j.ok){
@@ -330,7 +330,7 @@ function tab(t){['add','list','cent'].forEach(x=>{$('#v-'+x).hidden=x!==t;$('#t-
 function openSettings(){$('#sUrl').value=url;$('#sTitle').value=title;$('#sK').checked=inK;$('#dlg').showModal()}
 function saveSettings(){
   url=$('#sUrl').value.trim();title=$('#sTitle').value.trim()||title;inK=$('#sK').checked;
-  LS('url',url);LS('title',title);LS('k',inK?'1':'0');
+  LS('url',url);LS('urlFor',DEFAULT_URL);LS('title',title);LS('k',inK?'1':'0');
   dlg.close();resetForm();load();toast('تم حفظ الإعدادات');
 }
 // معرّف من: أي تغيير عند رب الأسرة ينتقل تلقائياً لأفراد العائلة (ما عدا من عدّلته يدوياً)
